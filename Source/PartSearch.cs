@@ -27,7 +27,7 @@ namespace PartSearch
 		void Init()
 		{
 			//set default categories
-			if (Categories != null)
+			if (Categories == null)
 			{
 				Categories = new PartCategories[PartLoader.LoadedPartsList.Count];
 				for (int i = 0; i < PartLoader.LoadedPartsList.Count; i++)
@@ -80,7 +80,9 @@ namespace PartSearch
 		void OnGUI()
 		{
 			GUI.skin = skin;
-			if (HasLoaded)
+
+			//only show gui when the mod has loaded and there is a root part
+			if (HasLoaded && EditorLogic.fetch.ship.Count > 0)
 			{
 				currentSearch = GUI.TextField (searchBarRect, currentSearch);
 				if (!IsSearching)
@@ -100,6 +102,10 @@ namespace PartSearch
 				else if (!IsSearching && !categorySetToDefault)
 					SetCategories (true);
 			}
+
+			//so everything reverts to normal when the active part has been deleted
+			if (EditorLogic.fetch.ship.Count <= 0 && !categorySetToDefault)
+				SetCategories (true);
 		}
 
 		IEnumerator<YieldInstruction> Refresh()
