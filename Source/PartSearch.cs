@@ -8,7 +8,7 @@ namespace PartSearch
 	[KSPAddon(KSPAddon.Startup.EditorAny, false)]
 	public class PartSearch : MonoBehaviour
 	{
-		public PartCategories[] Categories;
+		public static PartCategories[] Categories;
 		bool categorySetToDefault = true;
 
 		public bool HasLoaded = false;
@@ -27,16 +27,23 @@ namespace PartSearch
 		void Init()
 		{
 			//set default categories
-			Categories = new PartCategories[PartLoader.LoadedPartsList.Count];
-			for(int i = 0; i < PartLoader.LoadedPartsList.Count; i++)
+			if (Categories != null)
 			{
-				var part = PartLoader.LoadedPartsList [i];
-				Categories[i] = part.category;
+				Categories = new PartCategories[PartLoader.LoadedPartsList.Count];
+				for (int i = 0; i < PartLoader.LoadedPartsList.Count; i++)
+				{
+					var part = PartLoader.LoadedPartsList [i];
+					Categories [i] = part.category;
+				}
 			}
 
 			Filter = new EditorPartListFilter ("PartSearch_ID", DoesPartMeetSearchRequirements, "None found");
 			EditorPartList.Instance.ExcludeFilters.AddFilter (Filter);
 			EditorPartList.Instance.Refresh ();
+
+			//make part icons not spin anymore
+			//fixes an annoying bug where the parts will spin halfway, then stop
+			EditorPartList.Instance.iconOverSpin = 0f;
 
 			searchBarRect = new Rect (54, Screen.height - 90, 142, 20);
 
@@ -53,6 +60,7 @@ namespace PartSearch
 		void OnDestroy()
 		{
 			StopCoroutine (Refresh ());
+			SetCategories (true);
 		}
 
 		void Update()
@@ -100,7 +108,7 @@ namespace PartSearch
 			{
 				if(IsSearching)
 					EditorPartList.Instance.Refresh ();
-				yield return new WaitForSeconds (0.5f);
+				yield return new WaitForSeconds (1.0f);
 			}
 		}
 
